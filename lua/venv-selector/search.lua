@@ -124,7 +124,7 @@ local function run_search(opts)
 
         -- Special for windows to run the command without a shell (translate the command to a lua table before sending to jobstart)
         if uv.os_uname().sysname == "Windows_NT" then
-            job = utils.split_cmd_for_windows(job)
+            job = utils.split_string(job)
         end
 
         local job_id = vim.fn.jobstart(job, {

@@ -136,14 +136,4 @@ function M.toggle()
     end
 end
 
-function M.find_log_window()
-    local windows = vim.api.nvim_list_wins()
-    for _, win in ipairs(windows) do
-        if vim.api.nvim_win_get_buf(win) == log_buf then
-            return win
-        end
-    end
-    return nil
-end
-
 return M
