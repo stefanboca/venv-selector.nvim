@@ -160,7 +160,7 @@ local function run_search(opts)
             -- search has $WORKSPACE_PATH inside - dont start it unless the lsp has discovered workspace folders
             if is_workspace_search(pattern.command) then
                 local workspace_folders = workspace.list_folders()
-                for _, workspace_path in pairs(workspace_folders) do
+                for _, workspace_path in ipairs(workspace_folders) do
                     pattern.execute_command = pattern.execute_command:gsub("$WORKSPACE_PATH", workspace_path)
                     job_count = start_search_job(job_name, pattern, job_count)
                 end
