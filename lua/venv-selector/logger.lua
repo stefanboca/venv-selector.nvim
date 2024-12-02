@@ -14,6 +14,16 @@ M.levels = {
 M.current_level = M.levels.DEBUG
 M.enabled = false
 
+function M.setup()
+    if not require("venv-selector.config").debug then
+        return
+    end
+
+    M.enabled = true
+
+    vim.api.nvim_create_user_command("VenvSelectLog", M.toggle, { desc = "Toggle the VenvSelect log window" })
+end
+
 function M.set_level(level)
     if M.levels[level] then
         M.current_level = M.levels[level]
@@ -129,7 +139,7 @@ end
 
 function M.toggle()
     if M.enabled == false then
-        return 1
+        return
     end
 
     local current_buf = vim.api.nvim_win_get_buf(0)

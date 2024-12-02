@@ -1,198 +1,247 @@
 local hooks = require("venv-selector.hooks")
-local log = require("venv-selector.logger")
 
 local uv = vim.uv or vim.loop
 
 local M = {}
 
-M.user_settings = {}
-
-function M.get_default_searches()
-    local systems = {
-        ["Linux"] = {
-            virtualenvs = {
-                command = "$FD 'python$' ~/.virtualenvs --color never",
-            },
-            hatch = {
-                command = "$FD 'python$' ~/.local/share/hatch --color never -E '*-build*'",
-            },
-            poetry = {
-                command = "$FD '/bin/python$' ~/.cache/pypoetry/virtualenvs --full-path",
-            },
-            pyenv = {
-                command = "$FD '/bin/python$' ~/.pyenv/versions --full-path --color never -E pkgs/ -E envs/ -L",
-            },
-            pipenv = {
-                command = "$FD '/bin/python$' ~/.local/share/virtualenvs --full-path --color never",
-            },
-            anaconda_envs = {
-                command = "$FD 'bin/python$' ~/.conda/envs --full-path --color never",
-                type = "anaconda",
-            },
-            anaconda_base = {
-                command = "$FD '/python$' /opt/anaconda/bin --full-path --color never",
-                type = "anaconda",
-            },
-            miniconda_envs = {
-                command = "$FD 'bin/python$' ~/miniconda3/envs --full-path --color never",
-                type = "anaconda",
-            },
-            miniconda_base = {
-                command = "$FD '/python$' ~/miniconda3/bin --full-path --color never",
-                type = "anaconda",
-            },
-            pipx = {
-                command = "$FD '/bin/python$' ~/.local/share/pipx/venvs ~/.local/pipx/venvs --full-path --color never",
-            },
-            cwd = {
-                command = "$FD '/bin/python$' $CWD --full-path --color never -HI -a -L -E /proc -E .git/ -E .wine/ -E .steam/ -E Steam/ -E site-packages/",
-            },
-            workspace = {
-                command = "$FD '/bin/python$' $WORKSPACE_PATH --full-path --color never -E /proc -HI -a -L",
-            },
-            file = {
-                command = "$FD '/bin/python$' $FILE_DIR --full-path --color never -E /proc -HI -a -L",
-            },
+local default_patterns = {
+    ["Linux"] = {
+        virtualenvs = {
+            command = "$FD 'python$' ~/.virtualenvs --color never",
         },
-        ["Darwin"] = {
-            virtualenvs = {
-                command = "$FD 'python$' ~/.virtualenvs --color never",
-            },
-            hatch = {
-                command = "$FD 'python$' ~/Library/Application\\\\ Support/hatch/env/virtual --color never -E '*-build*'",
-            },
-            poetry = {
-                command = "$FD '/bin/python$' ~/Library/Caches/pypoetry/virtualenvs --full-path",
-            },
-            pyenv = {
-                command = "$FD '/bin/python$' ~/.pyenv/versions --full-path --color never -E pkgs/ -E envs/ -L",
-            },
-            pipenv = {
-                command = "$FD '/bin/python$' ~/.local/share/virtualenvs --full-path --color never",
-            },
-            anaconda_envs = {
-                command = "$FD 'bin/python$' ~/.conda/envs --full-path --color never",
-                type = "anaconda",
-            },
-            anaconda_base = {
-                command = "$FD '/python$' /opt/anaconda/bin --full-path --color never",
-                type = "anaconda",
-            },
-            miniconda_envs = {
-                command = "$FD 'bin/python$' ~/miniconda3/envs --full-path --color never",
-                type = "anaconda",
-            },
-            miniconda_base = {
-                command = "$FD '/python$' ~/miniconda3/bin --full-path --color never",
-                type = "anaconda",
-            },
-            pipx = {
-                command = "$FD '/bin/python$' ~/.local/share/pipx/venvs ~/.local/pipx/venvs --full-path --color never",
-            },
-            cwd = {
-                command = "$FD '/bin/python$' $CWD --full-path --color never -HI -a -L -E /proc -E .git/ -E .wine/ -E .steam/ -E Steam/ -E site-packages/",
-            },
-            workspace = {
-                command = "$FD '/bin/python$' $WORKSPACE_PATH --full-path --color never -E /proc -HI -a -L",
-            },
-            file = {
-                command = "$FD '/bin/python$' $FILE_DIR --full-path --color never -E /proc -HI -a -L",
-            },
+        hatch = {
+            command = "$FD 'python$' ~/.local/share/hatch --color never -E '*-build*'",
         },
-        -- NOTE: For windows searches, we convert the string below to a lua table before running it, so the execution doesnt use a shell that needs
-        -- a lot of escaping of the strings to get right.
-        ["Windows_NT"] = {
-            hatch = {
-                command = "$FD python.exe $HOME/AppData/Local/hatch/env/virtual --full-path --color never",
-            },
-            poetry = {
-                command = "$FD python.exe$ $HOME/AppData/Local/pypoetry/Cache/virtualenvs --full-path --color never",
-            },
-            pyenv = {
-                command = "$FD python.exe$ $HOME/.pyenv/pyenv-win/versions $HOME/.pyenv-win-venv/envs -E Lib",
-            },
-            pipenv = {
-                command = "$FD python.exe$ $HOME/.virtualenvs --full-path --color never",
-            },
-            anaconda_envs = {
-                command = "$FD python.exe$ $HOME/anaconda3/envs --full-path -a -E Lib",
-                type = "anaconda",
-            },
-            anaconda_base = {
-                command = "$FD anaconda3//python.exe $HOME/anaconda3 --full-path -a --color never",
-                type = "anaconda",
-            },
-            miniconda_envs = {
-                command = "$FD python.exe$ $HOME/miniconda3/envs --full-path -a -E Lib",
-                type = "anaconda",
-            },
-            miniconda_base = {
-                command = "$FD miniconda3//python.exe $HOME/miniconda3 --full-path -a --color never",
-                type = "anaconda",
-            },
-            pipx = {
-                command = "$FD Scripts//python.exe$ $HOME/pipx/venvs --full-path -a --color never",
-            },
-            cwd = {
-                command = "$FD Scripts//python.exe$ $CWD --full-path --color never -HI -a -L",
-            },
-            workspace = {
-                command = "$FD Scripts//python.exe$ $WORKSPACE_PATH --full-path --color never -HI -a -L",
-            },
-            file = {
-                command = "$FD Scripts//python.exe$ $FILE_DIR --full-path --color never -HI -a -L",
-            },
+        poetry = {
+            command = "$FD '/bin/python$' ~/.cache/pypoetry/virtualenvs --full-path",
         },
-    }
+        pyenv = {
+            command = "$FD '/bin/python$' ~/.pyenv/versions --full-path --color never -E pkgs/ -E envs/ -L",
+        },
+        pipenv = {
+            command = "$FD '/bin/python$' ~/.local/share/virtualenvs --full-path --color never",
+        },
+        anaconda_envs = {
+            command = "$FD 'bin/python$' ~/.conda/envs --full-path --color never",
+            type = "anaconda",
+        },
+        anaconda_base = {
+            command = "$FD '/python$' /opt/anaconda/bin --full-path --color never",
+            type = "anaconda",
+        },
+        miniconda_envs = {
+            command = "$FD 'bin/python$' ~/miniconda3/envs --full-path --color never",
+            type = "anaconda",
+        },
+        miniconda_base = {
+            command = "$FD '/python$' ~/miniconda3/bin --full-path --color never",
+            type = "anaconda",
+        },
+        pipx = {
+            command = "$FD '/bin/python$' ~/.local/share/pipx/venvs ~/.local/pipx/venvs --full-path --color never",
+        },
+        cwd = {
+            command = "$FD '/bin/python$' $CWD --full-path --color never -HI -a -L -E /proc -E .git/ -E .wine/ -E .steam/ -E Steam/ -E site-packages/",
+        },
+        workspace = {
+            command = "$FD '/bin/python$' $WORKSPACE_PATH --full-path --color never -E /proc -HI -a -L",
+        },
+        file = {
+            command = "$FD '/bin/python$' $FILE_DIR --full-path --color never -E /proc -HI -a -L",
+        },
+    },
+    ["Darwin"] = {
+        virtualenvs = {
+            command = "$FD 'python$' ~/.virtualenvs --color never",
+        },
+        hatch = {
+            command = "$FD 'python$' ~/Library/Application\\\\ Support/hatch/env/virtual --color never -E '*-build*'",
+        },
+        poetry = {
+            command = "$FD '/bin/python$' ~/Library/Caches/pypoetry/virtualenvs --full-path",
+        },
+        pyenv = {
+            command = "$FD '/bin/python$' ~/.pyenv/versions --full-path --color never -E pkgs/ -E envs/ -L",
+        },
+        pipenv = {
+            command = "$FD '/bin/python$' ~/.local/share/virtualenvs --full-path --color never",
+        },
+        anaconda_envs = {
+            command = "$FD 'bin/python$' ~/.conda/envs --full-path --color never",
+            type = "anaconda",
+        },
+        anaconda_base = {
+            command = "$FD '/python$' /opt/anaconda/bin --full-path --color never",
+            type = "anaconda",
+        },
+        miniconda_envs = {
+            command = "$FD 'bin/python$' ~/miniconda3/envs --full-path --color never",
+            type = "anaconda",
+        },
+        miniconda_base = {
+            command = "$FD '/python$' ~/miniconda3/bin --full-path --color never",
+            type = "anaconda",
+        },
+        pipx = {
+            command = "$FD '/bin/python$' ~/.local/share/pipx/venvs ~/.local/pipx/venvs --full-path --color never",
+        },
+        cwd = {
+            command = "$FD '/bin/python$' $CWD --full-path --color never -HI -a -L -E /proc -E .git/ -E .wine/ -E .steam/ -E Steam/ -E site-packages/",
+        },
+        workspace = {
+            command = "$FD '/bin/python$' $WORKSPACE_PATH --full-path --color never -E /proc -HI -a -L",
+        },
+        file = {
+            command = "$FD '/bin/python$' $FILE_DIR --full-path --color never -E /proc -HI -a -L",
+        },
+    },
+    -- NOTE: For windows searches, we convert the string below to a lua table before running it, so the execution doesnt use a shell that needs
+    -- a lot of escaping of the strings to get right.
+    ["Windows_NT"] = {
+        hatch = {
+            command = "$FD python.exe $HOME/AppData/Local/hatch/env/virtual --full-path --color never",
+        },
+        poetry = {
+            command = "$FD python.exe$ $HOME/AppData/Local/pypoetry/Cache/virtualenvs --full-path --color never",
+        },
+        pyenv = {
+            command = "$FD python.exe$ $HOME/.pyenv/pyenv-win/versions $HOME/.pyenv-win-venv/envs -E Lib",
+        },
+        pipenv = {
+            command = "$FD python.exe$ $HOME/.virtualenvs --full-path --color never",
+        },
+        anaconda_envs = {
+            command = "$FD python.exe$ $HOME/anaconda3/envs --full-path -a -E Lib",
+            type = "anaconda",
+        },
+        anaconda_base = {
+            command = "$FD anaconda3//python.exe $HOME/anaconda3 --full-path -a --color never",
+            type = "anaconda",
+        },
+        miniconda_envs = {
+            command = "$FD python.exe$ $HOME/miniconda3/envs --full-path -a -E Lib",
+            type = "anaconda",
+        },
+        miniconda_base = {
+            command = "$FD miniconda3//python.exe $HOME/miniconda3 --full-path -a --color never",
+            type = "anaconda",
+        },
+        pipx = {
+            command = "$FD Scripts//python.exe$ $HOME/pipx/venvs --full-path -a --color never",
+        },
+        cwd = {
+            command = "$FD Scripts//python.exe$ $CWD --full-path --color never -HI -a -L",
+        },
+        workspace = {
+            command = "$FD Scripts//python.exe$ $WORKSPACE_PATH --full-path --color never -HI -a -L",
+        },
+        file = {
+            command = "$FD Scripts//python.exe$ $FILE_DIR --full-path --color never -HI -a -L",
+        },
+    },
+}
 
-    local name = uv.os_uname().sysname
-    return systems[name] or systems["Linux"]
-end
+local config = {
+    sysname = nil,
+    cache = {
+        enabled = true,
+        file = "~/.cache/venv-selector/venvs2.json",
+    },
+    search = {
+        fd_binary = nil,
+        enable_default_patterns = true,
+        timeout_ms = 5000,
+        patterns = {},
+    },
+    select = {
+        picker = "auto",
+        show_search_type = true,
+        on_result_callback = nil,
+        active_venv_color = "#00FF00",
+        telescope = {
+            filter_type = "substring",
+        },
+    },
+    activate = {
+        notify = false,
+        require_lsp_activation = true,
+        set_env_vars = true,
+        activate_in_terminal = true,
+        hooks = { hooks.basedpyright_hook, hooks.pyright_hook, hooks.pylance_hook, hooks.pylsp_hook },
+        on_activate_callback = nil,
+    },
+    debug = false,
+}
 
-function M.merge_user_settings(user_settings)
-    log.debug("User plugin settings: ", user_settings.settings, "")
-    M.user_settings = vim.tbl_deep_extend("force", M.default_settings, user_settings.settings or {})
+function M.setup_picker()
+    local log = require("venv-selector.logger")
 
-    M.user_settings.detected = {
-        system = uv.os_uname().sysname,
-    }
+    local telescope_installed, _ = pcall(require, "telescope")
 
-    log.debug("Complete user settings:", M.user_settings, "")
-end
-
-function M.find_fd_command_name()
-    local look_for = { "fd", "fdfind", "fd_find" }
-    for _, cmd in ipairs(look_for) do
-        if vim.fn.executable(cmd) == 1 then
-            return cmd
+    if config.select.picker == "auto" then
+        if telescope_installed then
+            config.select.picker = "telescope"
+            return
+        else
+            log.notify_error("Could not automatically select picker. Manually set opts.select.picker")
         end
+    elseif config.select.picker == "telescope" and not telescope_installed then
+        log.notify_error(
+            "Picker was set to '"
+                .. config.select.picker
+                .. "', but '"
+                .. config.select.picker
+                .. "' is not a installed."
+        )
+    else
+        log.notify_error(
+            "Picker was set to '"
+                .. config.select.picker
+                .. "', but '"
+                .. config.select.picker
+                .. "' is not a valid option."
+        )
     end
 end
 
-M.default_settings = {
-    cache = {
-        file = "~/.cache/venv-selector/venvs2.json",
-    },
-    hooks = { hooks.basedpyright_hook, hooks.pyright_hook, hooks.pylance_hook, hooks.pylsp_hook },
-    options = {
-        on_venv_activate_callback = nil, -- callback function for after a venv activates
-        enable_default_searches = true, -- switches all default searches on/off
-        enable_cached_venvs = true, -- use cached venvs that are activated automatically when a python file is registered with the LSP.
-        cached_venv_automatic_activation = true, -- if set to false, the VenvSelectCached command becomes available to manually activate them.
-        activate_venv_in_terminal = true, -- activate the selected python interpreter in terminal windows opened from neovim
-        set_environment_variables = true, -- sets VIRTUAL_ENV or CONDA_PREFIX environment variables
-        notify_user_on_venv_activation = false, -- notifies user on activation of the virtual env
-        search_timeout = 5, -- if a search takes longer than this many seconds, stop it and alert the user
-        debug = false, -- enables you to run the VenvSelectLog command to view debug logs
-        fd_binary_name = M.find_fd_command_name(), -- plugin looks for `fd` or `fdfind` but you can set something else here
-        require_lsp_activation = true, -- require activation of an lsp before setting env variables
-        -- telescope viewer options
-        on_telescope_result_callback = nil, -- callback function for modifying telescope results
-        show_telescope_search_type = true, -- Shows which of the searches found which venv in telescope
-        telescope_filter_type = "substring", -- When you type something in telescope, filter by "substring" or "character"
-        telescope_active_venv_color = "#00FF00", -- The color of the active venv in telescope
-    },
-    search = M.get_default_searches(),
-}
+function M.setup(opts)
+    config = vim.tbl_deep_extend("force", config, opts or {})
 
-return M
+    local log = require("venv-selector.logger")
+    -- set up logging ASAP
+    log.setup()
+
+    if not config.sysname then
+        config.sysname = uv.os_uname().sysname
+    end
+
+    if not config.search.fd_binary then
+        for _, cmd in ipairs({ "fd", "fdfind", "fd_find" }) do
+            if vim.fn.executable(cmd) == 1 then
+                config.search.fd_binary = cmd
+                break
+            end
+        end
+    end
+    if not config.search.fd_binary then
+        log.notify_error(
+            "Cannot find fd on your system. If its installed under a different name, set opts.search.fd_binary."
+        )
+    end
+
+    if config.search.enable_default_patterns then
+        config.search.patterns = vim.tbl_extend(
+            "force",
+            default_patterns[config.sysname] or default_patterns["Linux"],
+            config.search.patterns
+        )
+    end
+
+    M.setup_picker()
+end
+
+return setmetatable(M, {
+    __index = function(_, k)
+        return config[k]
+    end,
+})

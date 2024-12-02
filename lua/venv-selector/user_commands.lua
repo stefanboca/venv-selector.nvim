@@ -1,7 +1,6 @@
 local config = require("venv-selector.config")
 local search = require("venv-selector.search")
 local gui = require("venv-selector.gui")
-local log = require("venv-selector.logger")
 
 local M = {}
 
@@ -11,16 +10,7 @@ function M.register()
         search.New(opts)
     end, { nargs = "*", desc = "Activate venv" })
 
-    vim.api.nvim_create_user_command("VenvSelectLog", function()
-        local rc = log.toggle()
-        if rc == 1 then
-            vim.notify("Please set debug to true in options to use the logger.", vim.log.levels.INFO, {
-                title = "VenvSelect",
-            })
-        end
-    end, { desc = "Toggle the VenvSelect log window" })
-
-    if config.user_settings.options.cached_venv_automatic_activation == false then
+    if not config.user_settings.options.cache.enabled then
         vim.api.nvim_create_user_command("VenvSelectCached", function()
             local cache = require("venv-selector.cached_venv")
             cache.retrieve()

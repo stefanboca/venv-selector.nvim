@@ -7,8 +7,8 @@ local M = {}
 M.current_source = nil -- contains the name of the search, like anaconda, pipx etc.
 
 function M.stop_lsp_servers()
-    local hooks = require("venv-selector.config").user_settings.hooks
-    for _, hook in pairs(hooks) do
+    local hooks = config.activate.hooks
+    for _, hook in ipairs(hooks) do
         hook(nil)
     end
 end
@@ -44,12 +44,12 @@ function M.activate(python_path, type, check_lsp)
 
     -- Inform lsp servers
     local count = 0
-    local hooks = require("venv-selector.config").user_settings.hooks
-    for _, hook in pairs(hooks) do
+    local hooks = config.activate.hooks
+    for _, hook in ipairs(hooks) do
         count = count + hook(python_path)
     end
 
-    if check_lsp and count == 0 and config.user_settings.options.require_lsp_activation == true then
+    if check_lsp and count == 0 and config.activate.require_lsp_activation then
         log.notify_info(
             "No python lsp servers are running. Please open a python file and then select a venv to activate."
         )
@@ -61,10 +61,10 @@ function M.activate(python_path, type, check_lsp)
 
     M.update_paths(python_path, type)
 
-    local on_venv_activate_callback = config.user_settings.options.on_venv_activate_callback
-    if on_venv_activate_callback ~= nil then
-        log.debug("Calling on_venv_activate_callback() function")
-        on_venv_activate_callback()
+    local on_activate_callback = config.activate.on_activate_callback
+    if on_activate_callback ~= nil then
+        log.debug("Calling on_activate_callback() function")
+        on_activate_callback()
     end
 
     return true
@@ -85,7 +85,7 @@ function M.update_paths(venv_path, type)
 end
 
 function M.set_env(python_path, env_variable_name)
-    if config.user_settings.options.set_environment_variables == true then
+    if config.activate.set_env_vars == true then
         local env_path = path.get_base(path.get_base(python_path))
         if env_path ~= nil then
             vim.fn.setenv(env_variable_name, env_path)
@@ -95,7 +95,7 @@ function M.set_env(python_path, env_variable_name)
 end
 
 function M.unset_env(env_variable_name)
-    if config.user_settings.options.set_environment_variables == true then
+    if config.activate.set_env_vars == true then
         if vim.fn.getenv(env_variable_name) ~= nil then
             vim.fn.setenv(env_variable_name, nil)
             log.debug("$" .. env_variable_name .. " has been unset.")

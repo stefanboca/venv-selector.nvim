@@ -15,7 +15,7 @@ function M.save_selected_python(python_path)
 end
 
 function M.add(newDir)
-    if config.user_settings.options.activate_venv_in_terminal == true then
+    if config.activate.activate_in_terminal then
         if newDir ~= nil then
             if previous_dir ~= nil then
                 M.remove(previous_dir)

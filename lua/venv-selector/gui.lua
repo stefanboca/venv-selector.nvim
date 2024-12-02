@@ -28,7 +28,7 @@ function M.get_sorter()
         end,
     }
 
-    return choices[config.user_settings.options.telescope_filter_type]
+    return choices[config.select.telescope.filter_type]
 end
 
 function M.make_entry_maker()
@@ -85,17 +85,10 @@ function M.make_entry_maker()
         entry.ordinal = entry.path
         entry.display = function(e)
             return displayer({
-                {
-                    icon,
-                    hl_active_venv(entry),
-                },
+                { icon, hl_active_venv(entry) },
                 { e.name },
-                {
-                    config.user_settings.options.show_telescope_search_type and draw_icons_for_types(entry) or "",
-                },
-                {
-                    config.user_settings.options.show_telescope_search_type and e.source or "",
-                },
+                { config.select.show_search_type and draw_icons_for_types(entry) or "" },
+                { config.select.show_search_type and e.source or "" },
             })
         end
 

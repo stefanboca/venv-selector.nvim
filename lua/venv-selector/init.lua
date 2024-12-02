@@ -1,4 +1,3 @@
-local log = require("venv-selector.logger")
 local user_commands = require("venv-selector.user_commands")
 local config = require("venv-selector.config")
 local venv = require("venv-selector.venv")
@@ -58,12 +57,13 @@ function M.deactivate()
     venv.unset_env_variables()
 end
 
-function M.setup(plugin_settings)
-    config.merge_user_settings(plugin_settings or {})
-    vim.api.nvim_command("hi VenvSelectActiveVenv guifg=" .. config.user_settings.options.telescope_active_venv_color)
-    if config.user_settings.options.debug == true then
-        log.enabled = true
-    end
+function M.setup(opts)
+    config.setup(opts or {})
+
+    require("venv-selector.cache").setup()
+
+    vim.api.nvim_command("hi VenvSelectActiveVenv guifg=" .. config.select.active_venv_color)
+
     user_commands.register()
 end
 

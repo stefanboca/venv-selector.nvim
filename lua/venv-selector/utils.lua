@@ -1,5 +1,3 @@
-local log = require("venv-selector.logger")
-
 local M = {}
 
 function M.table_has_content(t)
@@ -50,28 +48,6 @@ function M.split_string(str)
     end
 
     return result
-end
-
-function M.try(table, ...)
-    local result = table
-    for _, key in ipairs({ ... }) do
-        if result then
-            result = result[key]
-        else
-            return nil
-        end
-    end
-    return result
-end
-
-function M.check_dependencies_installed()
-    local installed, telescope = pcall(require, "telescope")
-    if installed == false then
-        log.notify_error("VenvSelect requires telescope to be installed.")
-        return false
-    end
-
-    return true
 end
 
 return M
