@@ -50,10 +50,9 @@ function M.activate(python_path, type, check_lsp)
     end
 
     if check_lsp and count == 0 and config.user_settings.options.require_lsp_activation == true then
-        local message =
+        log.notify_info(
             "No python lsp servers are running. Please open a python file and then select a venv to activate."
-        vim.notify(message, vim.log.levels.INFO, { title = "VenvSelect" })
-        log.info(message)
+        )
         return false
     end
 

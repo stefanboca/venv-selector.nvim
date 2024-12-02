@@ -142,15 +142,13 @@ local function run_search(opts)
             local running = vim.fn.jobwait({ job_id }, 0)[1] == -1
             if running then
                 vim.fn.jobstop(job_id)
-                local message = "Search with name '"
-                    .. jobs[job_id].name
-                    .. "' took more than "
-                    .. search_timeout
-                    .. " seconds and was stopped. Avoid using VenvSelect in your $HOME directory since it searches all hidden files by default."
-                log.warning(message)
-                vim.notify(message, vim.log.levels.ERROR, {
-                    title = "VenvSelect",
-                })
+                log.notify_warning(
+                    "Search with name '"
+                        .. jobs[job_id].name
+                        .. "' took more than "
+                        .. search_timeout
+                        .. " seconds and was stopped. Avoid using VenvSelect in your $HOME directory since it searches all hidden files by default."
+                )
             end
         end
 
@@ -208,14 +206,11 @@ end
 function M.New(opts)
     local options = require("venv-selector.config").user_settings.options
     if options.fd_binary_name == nil then
-        local message =
+        log.notify_error(
             "Cannot find any fd binary on your system. If its installed under a different name, you can set options.fd_binary_name to its name."
-        log.error(message)
-        vim.notify(message, vim.log.levels.ERROR, { title = "VenvSelect" })
+        )
     elseif utils.check_dependencies_installed() == false then
-        local message = "Not all required modules are installed."
-        log.error(message)
-        vim.notify(message, vim.log.levels.ERROR, { title = "VenvSelect" })
+        log.notify_error("Not all required modules are installed.")
     elseif utils.table_has_content(gui.results) == false then
         run_search(opts)
     else

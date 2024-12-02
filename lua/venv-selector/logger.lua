@@ -54,6 +54,21 @@ function M.error(...)
     M.iterate_args("ERROR", ...)
 end
 
+function M.notify_info(msg)
+    vim.notify(msg, vim.log.levels.INFO, msg)
+    M.info(msg)
+end
+
+function M.notify_warn(msg)
+    vim.notify(msg, vim.log.levels.WARN, msg)
+    M.warn(msg)
+end
+
+function M.notify_error(msg)
+    vim.notify(msg, vim.log.levels.ERROR, msg)
+    M.error(msg)
+end
+
 function M.get_utc_date_time()
     local utc_time = os.date("!%Y-%m-%d %H:%M:%S", os.time())
     return utc_time
