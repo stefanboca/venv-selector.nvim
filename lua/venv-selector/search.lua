@@ -100,7 +100,7 @@ local function run_search(opts)
     end
 
     local function start_search_job(job_name, search, count)
-        local job = path.expand(search.execute_command)
+        local job = vim.fn.expand(search.execute_command)
 
         log.debug("Starting '" .. job_name .. "': '" .. job .. "'")
         M.search_in_progress = true
@@ -156,7 +156,7 @@ local function run_search(opts)
     -- Start search jobs from config
     for job_name, pattern in pairs(search_patterns) do
         if pattern ~= false then -- Can be set to false by user to not search path
-            local execute_command = path.expand(pattern.command:gsub("$FD", config.search.fd_binary))
+            local execute_command = vim.fn.expand(pattern.command:gsub("$FD", config.search.fd_binary))
 
             -- search has $WORKSPACE_PATH inside - dont start it unless the lsp has discovered workspace folders
             if is_workspace_search(pattern.command) then

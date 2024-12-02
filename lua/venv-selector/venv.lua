@@ -40,7 +40,7 @@ function M.activate(python_path, type, check_lsp)
     -- and if the user is quick to open the telescope before lsp has activated, the selected
     -- venv wont be displayed otherwise.
     path.current_python_path = python_path
-    path.current_venv_path = path.get_base(python_path)
+    path.current_venv_path = vim.fs.dirname(python_path)
 
     -- Inform lsp servers
     local count = 0
@@ -70,7 +70,7 @@ function M.activate(python_path, type, check_lsp)
 end
 
 function M.update_paths(venv_path, type)
-    path.add(path.get_base(venv_path))
+    path.add(vim.fs.dirname(venv_path))
     path.update_python_dap(venv_path)
     path.save_selected_python(venv_path)
 
@@ -85,7 +85,7 @@ end
 
 function M.set_env(python_path, env_variable_name)
     if config.activate.set_env_vars == true then
-        local env_path = path.get_base(path.get_base(python_path))
+        local env_path = vim.fs.dirname(vim.fs.dirname(python_path))
         if env_path ~= nil then
             vim.fn.setenv(env_variable_name, env_path)
             log.debug("$" .. env_variable_name .. " set to " .. env_path)

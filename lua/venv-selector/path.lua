@@ -7,9 +7,8 @@ M.current_venv_path = nil
 local previous_dir = nil
 
 function M.save_selected_python(python_path)
-    local path = require("venv-selector.path")
     M.current_python_path = python_path
-    M.current_venv_path = path.get_base(path.get_base(python_path))
+    M.current_venv_path = vim.fs.dirname(vim.fs.dirname(python_path))
     log.debug('Setting require("venv-selector").python() to \'' .. M.current_python_path .. "'")
     log.debug('Setting require("venv-selector").venv() to \'' .. M.current_venv_path .. "'")
 end
@@ -55,7 +54,7 @@ end
 
 function M.remove_current()
     if M.current_python_path ~= nil then
-        M.remove(M.get_base(M.current_python_path))
+        M.remove(vim.fs.dirname(M.current_python_path))
     end
 end
 
@@ -78,32 +77,7 @@ end
 function M.get_current_file_directory()
     local opened_filepath = vim.fn.expand("%:p")
     if opened_filepath ~= nil then
-        return M.get_base(opened_filepath)
-    end
-end
-
-function M.expand(path)
-    local expanded_path = vim.fn.expand(path)
-    return expanded_path
-end
-
-function M.get_base(path)
-    if path ~= nil then
-        -- Check if the path ends with a slash and remove it, unless it's a root path
-        if (path:sub(-1) == "/" or path:sub(-1) == "\\") and #path > 1 then
-            path = path:sub(1, -2)
-        end
-
-        -- Use the pattern to find the base path
-        local pattern = "(.*[/\\])"
-        local base = path:match(pattern)
-        if base then
-            -- Remove the trailing slash for the next potential call
-            return base:sub(1, -2)
-        else
-            -- Return nil if no higher directory level can be found
-            return nil
-        end
+        return vim.fs.dirname(opened_filepath)
     end
 end
 
