@@ -145,7 +145,7 @@ local config = {
     sysname = nil,
     cache = {
         enabled = true,
-        file = "~/.cache/venv-selector/venvs2.json",
+        auto_activate = true,
     },
     search = {
         fd_binary = nil,

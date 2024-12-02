@@ -56,8 +56,7 @@ function M.activate(python_path, type, check_lsp)
         return false
     end
 
-    local cache = require("venv-selector.cached_venv")
-    cache.save(python_path, type)
+    require("venv-selector.cache").save(python_path, type)
 
     M.update_paths(python_path, type)
 

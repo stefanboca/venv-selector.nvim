@@ -6,10 +6,7 @@ local ws = require("venv-selector.workspace")
 
 local function on_lsp_attach()
     if vim.bo.filetype == "python" then
-        local cache = require("venv-selector.cached_venv")
-        if config.user_settings.options.cached_venv_automatic_activation == true then
-            cache.retrieve()
-        end
+        require("venv-selector.cache").retrieve()
     end
 end
 
