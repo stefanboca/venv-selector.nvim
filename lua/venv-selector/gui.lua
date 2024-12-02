@@ -113,9 +113,10 @@ function M.open(in_progress)
 end
 
 function M.setup()
-    if config.picker == "telescope" then
+    local picker = config.user_settings.options.picker
+    if picker == "telescope" then
         M.picker = require("venv-selector.pickers.telescope")
-    elseif config.picker == "fzf-lua" then
+    elseif picker == "fzf-lua" then
         M.picker = require("venv-selector.pickers.fzf_lua")
     else
         -- TODO: error

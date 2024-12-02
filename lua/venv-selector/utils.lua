@@ -104,4 +104,30 @@ function M.print_table(tbl, indent)
     end
 end
 
+function M.draw_icons_for_types(entry)
+    if vim.tbl_contains({
+        "cwd",
+        "workspace",
+        "file",
+    }, entry.source) then
+        return "󰥨"
+    elseif
+        vim.tbl_contains({
+            "virtualenvs",
+            "hatch",
+            "poetry",
+            "pyenv",
+            "anaconda_envs",
+            "anaconda_base",
+            "miniconda_envs",
+            "miniconda_base",
+            "pipx",
+        })
+    then
+        return ""
+    else
+        return "" -- user created venv icon
+    end
+end
+
 return M

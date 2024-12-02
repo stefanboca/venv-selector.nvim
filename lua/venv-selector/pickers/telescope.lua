@@ -1,6 +1,7 @@
 local config = require("venv-selector.config")
-local path = require("venv-selector.path")
 local venv = require("venv-selector.venv")
+local path = require("venv-selector.path")
+local utils = require("venv-selector.utils")
 
 local M = {}
 
@@ -34,32 +35,6 @@ function M.make_entry_maker()
         },
     })
 
-    local function draw_icons_for_types(e)
-        if vim.tbl_contains({
-            "cwd",
-            "workspace",
-            "file",
-        }, e.source) then
-            return "󰥨"
-        elseif
-            vim.tbl_contains({
-                "virtualenvs",
-                "hatch",
-                "poetry",
-                "pyenv",
-                "anaconda_envs",
-                "anaconda_base",
-                "miniconda_envs",
-                "miniconda_base",
-                "pipx",
-            })
-        then
-            return ""
-        else
-            return "" -- user created venv icon
-        end
-    end
-
     local function hl_active_venv(e)
         local icon_highlight = "VenvSelectActiveVenv"
         if e.path == path.current_python_path then
@@ -74,17 +49,10 @@ function M.make_entry_maker()
         entry.ordinal = entry.path
         entry.display = function(e)
             return displayer({
-                {
-                    icon,
-                    hl_active_venv(entry),
-                },
+                { icon, hl_active_venv(entry) },
                 { e.name },
-                {
-                    config.user_settings.options.show_telescope_search_type and draw_icons_for_types(entry) or "",
-                },
-                {
-                    config.user_settings.options.show_telescope_search_type and e.source or "",
-                },
+                { config.user_settings.options.show_telescope_search_type and utils.draw_icons_for_types(entry) or "" },
+                { config.user_settings.options.show_telescope_search_type and e.source or "" },
             })
         end
 
@@ -145,8 +113,7 @@ function M.open(results)
             end)
 
             map("i", "<C-r>", function()
-                require("venv-selector.gui").clear_results()
-                require("venv-selector.search").New(nil)
+                require("venv-selector.search").run_search()
             end)
 
             return true

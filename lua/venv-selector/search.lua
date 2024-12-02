@@ -44,7 +44,7 @@ local function set_interactive_search(opts)
     return nil
 end
 
-local function run_search(opts)
+function M.run_search(opts)
     local user_settings = require("venv-selector.config").user_settings
     local options = require("venv-selector.config").user_settings.options
 
@@ -52,6 +52,8 @@ local function run_search(opts)
         log.info("Not starting new search because previous search is still running.")
         return
     end
+
+    gui.clear_results()
 
     local jobs = {}
     local job_count = 0
@@ -62,8 +64,7 @@ local function run_search(opts)
     local search_timeout = options.search_timeout
 
     local function on_event(job_id, data, event)
-        local callback = jobs[job_id].on_telescope_result_callback
-            or utils.try(search_settings, "options", "on_telescope_result_callback")
+        local callback = jobs[job_id].on_result_callback or utils.try(search_settings, "options", "on_result_callback")
 
         if event == "stdout" and data then
             local search = jobs[job_id]
@@ -82,7 +83,7 @@ local function run_search(opts)
 
                     if callback then
                         log.debug(
-                            "Calling on_telescope_result() callback function with line '"
+                            "Calling on_result_callback() callback function with line '"
                                 .. line
                                 .. "' and source '"
                                 .. rv.source
@@ -201,23 +202,6 @@ local function run_search(opts)
                 job_count = start_search_job(job_name, search, job_count)
             end
         end
-    end
-end
-
-function M.New(opts)
-    local options = require("venv-selector.config").user_settings.options
-    if options.fd_binary_name == nil then
-        local message =
-            "Cannot find any fd binary on your system. If its installed under a different name, you can set options.fd_binary_name to its name."
-        log.error(message)
-        vim.notify(message, vim.log.levels.ERROR, { title = "VenvSelect" })
-    elseif utils.check_dependencies_installed() == false then
-        local message = "Not all required modules are installed."
-        log.error(message)
-        vim.notify(message, vim.log.levels.ERROR, { title = "VenvSelect" })
-    elseif utils.table_has_content(gui.results) == false then
-        run_search(opts)
-    else
     end
 end
 

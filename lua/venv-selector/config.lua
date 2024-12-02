@@ -190,12 +190,13 @@ M.default_settings = {
         debug = false, -- enables you to run the VenvSelectLog command to view debug logs
         fd_binary_name = M.find_fd_command_name(), -- plugin looks for `fd` or `fdfind` but you can set something else here
         require_lsp_activation = true, -- require activation of an lsp before setting env variables
-        -- telescope viewer options
-        on_telescope_result_callback = nil, -- callback function for modifying telescope results
-        show_telescope_search_type = true, -- Shows which of the searches found which venv in telescope
-        telescope_filter_type = "substring", -- When you type something in telescope, filter by "substring" or "character"
-        telescope_active_venv_color = "#00FF00", -- The color of the active venv in telescope
+        -- picker options
         picker = "telescope",
+        show_search_type = true, -- Shows which of the searches found which venv in the picker
+        on_result_callback = nil, -- callback function for modifying result name
+        -- telescope options
+        telescope_active_venv_color = "#00FF00", -- The color of the active venv in the picker
+        telescope_filter_type = "substring", -- When you type something in telescope, filter by "substring" or "character"
     },
     search = M.get_default_searches()(),
 }
