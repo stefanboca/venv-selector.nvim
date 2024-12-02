@@ -9,146 +9,140 @@ M.user_settings = {}
 
 function M.get_default_searches()
     local systems = {
-        ["Linux"] = function()
-            return {
-                virtualenvs = {
-                    command = "$FD 'python$' ~/.virtualenvs --color never",
-                },
-                hatch = {
-                    command = "$FD 'python$' ~/.local/share/hatch --color never -E '*-build*'",
-                },
-                poetry = {
-                    command = "$FD '/bin/python$' ~/.cache/pypoetry/virtualenvs --full-path",
-                },
-                pyenv = {
-                    command = "$FD '/bin/python$' ~/.pyenv/versions --full-path --color never -E pkgs/ -E envs/ -L",
-                },
-                pipenv = {
-                    command = "$FD '/bin/python$' ~/.local/share/virtualenvs --full-path --color never",
-                },
-                anaconda_envs = {
-                    command = "$FD 'bin/python$' ~/.conda/envs --full-path --color never",
-                    type = "anaconda",
-                },
-                anaconda_base = {
-                    command = "$FD '/python$' /opt/anaconda/bin --full-path --color never",
-                    type = "anaconda",
-                },
-                miniconda_envs = {
-                    command = "$FD 'bin/python$' ~/miniconda3/envs --full-path --color never",
-                    type = "anaconda",
-                },
-                miniconda_base = {
-                    command = "$FD '/python$' ~/miniconda3/bin --full-path --color never",
-                    type = "anaconda",
-                },
-                pipx = {
-                    command = "$FD '/bin/python$' ~/.local/share/pipx/venvs ~/.local/pipx/venvs --full-path --color never",
-                },
-                cwd = {
-                    command = "$FD '/bin/python$' $CWD --full-path --color never -HI -a -L -E /proc -E .git/ -E .wine/ -E .steam/ -E Steam/ -E site-packages/",
-                },
-                workspace = {
-                    command = "$FD '/bin/python$' $WORKSPACE_PATH --full-path --color never -E /proc -HI -a -L",
-                },
-                file = {
-                    command = "$FD '/bin/python$' $FILE_DIR --full-path --color never -E /proc -HI -a -L",
-                },
-            }
-        end,
-        ["Darwin"] = function()
-            return {
-                virtualenvs = {
-                    command = "$FD 'python$' ~/.virtualenvs --color never",
-                },
-                hatch = {
-                    command = "$FD 'python$' ~/Library/Application\\\\ Support/hatch/env/virtual --color never -E '*-build*'",
-                },
-                poetry = {
-                    command = "$FD '/bin/python$' ~/Library/Caches/pypoetry/virtualenvs --full-path",
-                },
-                pyenv = {
-                    command = "$FD '/bin/python$' ~/.pyenv/versions --full-path --color never -E pkgs/ -E envs/ -L",
-                },
-                pipenv = {
-                    command = "$FD '/bin/python$' ~/.local/share/virtualenvs --full-path --color never",
-                },
-                anaconda_envs = {
-                    command = "$FD 'bin/python$' ~/.conda/envs --full-path --color never",
-                    type = "anaconda",
-                },
-                anaconda_base = {
-                    command = "$FD '/python$' /opt/anaconda/bin --full-path --color never",
-                    type = "anaconda",
-                },
-                miniconda_envs = {
-                    command = "$FD 'bin/python$' ~/miniconda3/envs --full-path --color never",
-                    type = "anaconda",
-                },
-                miniconda_base = {
-                    command = "$FD '/python$' ~/miniconda3/bin --full-path --color never",
-                    type = "anaconda",
-                },
-                pipx = {
-                    command = "$FD '/bin/python$' ~/.local/share/pipx/venvs ~/.local/pipx/venvs --full-path --color never",
-                },
-                cwd = {
-                    command = "$FD '/bin/python$' $CWD --full-path --color never -HI -a -L -E /proc -E .git/ -E .wine/ -E .steam/ -E Steam/ -E site-packages/",
-                },
-                workspace = {
-                    command = "$FD '/bin/python$' $WORKSPACE_PATH --full-path --color never -E /proc -HI -a -L",
-                },
-                file = {
-                    command = "$FD '/bin/python$' $FILE_DIR --full-path --color never -E /proc -HI -a -L",
-                },
-            }
-        end,
-        ["Windows_NT"] = function()
-            -- NOTE: For windows searches, we convert the string below to a lua table before running it, so the execution doesnt use a shell that needs
-            -- a lot of escaping of the strings to get right.
-            return {
-                hatch = {
-                    command = "$FD python.exe $HOME/AppData/Local/hatch/env/virtual --full-path --color never",
-                },
-                poetry = {
-                    command = "$FD python.exe$ $HOME/AppData/Local/pypoetry/Cache/virtualenvs --full-path --color never",
-                },
-                pyenv = {
-                    command = "$FD python.exe$ $HOME/.pyenv/pyenv-win/versions $HOME/.pyenv-win-venv/envs -E Lib",
-                },
-                pipenv = {
-                    command = "$FD python.exe$ $HOME/.virtualenvs --full-path --color never",
-                },
-                anaconda_envs = {
-                    command = "$FD python.exe$ $HOME/anaconda3/envs --full-path -a -E Lib",
-                    type = "anaconda",
-                },
-                anaconda_base = {
-                    command = "$FD anaconda3//python.exe $HOME/anaconda3 --full-path -a --color never",
-                    type = "anaconda",
-                },
-                miniconda_envs = {
-                    command = "$FD python.exe$ $HOME/miniconda3/envs --full-path -a -E Lib",
-                    type = "anaconda",
-                },
-                miniconda_base = {
-                    command = "$FD miniconda3//python.exe $HOME/miniconda3 --full-path -a --color never",
-                    type = "anaconda",
-                },
-                pipx = {
-                    command = "$FD Scripts//python.exe$ $HOME/pipx/venvs --full-path -a --color never",
-                },
-                cwd = {
-                    command = "$FD Scripts//python.exe$ $CWD --full-path --color never -HI -a -L",
-                },
-                workspace = {
-                    command = "$FD Scripts//python.exe$ $WORKSPACE_PATH --full-path --color never -HI -a -L",
-                },
-                file = {
-                    command = "$FD Scripts//python.exe$ $FILE_DIR --full-path --color never -HI -a -L",
-                },
-            }
-        end,
+        ["Linux"] = {
+            virtualenvs = {
+                command = "$FD 'python$' ~/.virtualenvs --color never",
+            },
+            hatch = {
+                command = "$FD 'python$' ~/.local/share/hatch --color never -E '*-build*'",
+            },
+            poetry = {
+                command = "$FD '/bin/python$' ~/.cache/pypoetry/virtualenvs --full-path",
+            },
+            pyenv = {
+                command = "$FD '/bin/python$' ~/.pyenv/versions --full-path --color never -E pkgs/ -E envs/ -L",
+            },
+            pipenv = {
+                command = "$FD '/bin/python$' ~/.local/share/virtualenvs --full-path --color never",
+            },
+            anaconda_envs = {
+                command = "$FD 'bin/python$' ~/.conda/envs --full-path --color never",
+                type = "anaconda",
+            },
+            anaconda_base = {
+                command = "$FD '/python$' /opt/anaconda/bin --full-path --color never",
+                type = "anaconda",
+            },
+            miniconda_envs = {
+                command = "$FD 'bin/python$' ~/miniconda3/envs --full-path --color never",
+                type = "anaconda",
+            },
+            miniconda_base = {
+                command = "$FD '/python$' ~/miniconda3/bin --full-path --color never",
+                type = "anaconda",
+            },
+            pipx = {
+                command = "$FD '/bin/python$' ~/.local/share/pipx/venvs ~/.local/pipx/venvs --full-path --color never",
+            },
+            cwd = {
+                command = "$FD '/bin/python$' $CWD --full-path --color never -HI -a -L -E /proc -E .git/ -E .wine/ -E .steam/ -E Steam/ -E site-packages/",
+            },
+            workspace = {
+                command = "$FD '/bin/python$' $WORKSPACE_PATH --full-path --color never -E /proc -HI -a -L",
+            },
+            file = {
+                command = "$FD '/bin/python$' $FILE_DIR --full-path --color never -E /proc -HI -a -L",
+            },
+        },
+        ["Darwin"] = {
+            virtualenvs = {
+                command = "$FD 'python$' ~/.virtualenvs --color never",
+            },
+            hatch = {
+                command = "$FD 'python$' ~/Library/Application\\\\ Support/hatch/env/virtual --color never -E '*-build*'",
+            },
+            poetry = {
+                command = "$FD '/bin/python$' ~/Library/Caches/pypoetry/virtualenvs --full-path",
+            },
+            pyenv = {
+                command = "$FD '/bin/python$' ~/.pyenv/versions --full-path --color never -E pkgs/ -E envs/ -L",
+            },
+            pipenv = {
+                command = "$FD '/bin/python$' ~/.local/share/virtualenvs --full-path --color never",
+            },
+            anaconda_envs = {
+                command = "$FD 'bin/python$' ~/.conda/envs --full-path --color never",
+                type = "anaconda",
+            },
+            anaconda_base = {
+                command = "$FD '/python$' /opt/anaconda/bin --full-path --color never",
+                type = "anaconda",
+            },
+            miniconda_envs = {
+                command = "$FD 'bin/python$' ~/miniconda3/envs --full-path --color never",
+                type = "anaconda",
+            },
+            miniconda_base = {
+                command = "$FD '/python$' ~/miniconda3/bin --full-path --color never",
+                type = "anaconda",
+            },
+            pipx = {
+                command = "$FD '/bin/python$' ~/.local/share/pipx/venvs ~/.local/pipx/venvs --full-path --color never",
+            },
+            cwd = {
+                command = "$FD '/bin/python$' $CWD --full-path --color never -HI -a -L -E /proc -E .git/ -E .wine/ -E .steam/ -E Steam/ -E site-packages/",
+            },
+            workspace = {
+                command = "$FD '/bin/python$' $WORKSPACE_PATH --full-path --color never -E /proc -HI -a -L",
+            },
+            file = {
+                command = "$FD '/bin/python$' $FILE_DIR --full-path --color never -E /proc -HI -a -L",
+            },
+        },
+        -- NOTE: For windows searches, we convert the string below to a lua table before running it, so the execution doesnt use a shell that needs
+        -- a lot of escaping of the strings to get right.
+        ["Windows_NT"] = {
+            hatch = {
+                command = "$FD python.exe $HOME/AppData/Local/hatch/env/virtual --full-path --color never",
+            },
+            poetry = {
+                command = "$FD python.exe$ $HOME/AppData/Local/pypoetry/Cache/virtualenvs --full-path --color never",
+            },
+            pyenv = {
+                command = "$FD python.exe$ $HOME/.pyenv/pyenv-win/versions $HOME/.pyenv-win-venv/envs -E Lib",
+            },
+            pipenv = {
+                command = "$FD python.exe$ $HOME/.virtualenvs --full-path --color never",
+            },
+            anaconda_envs = {
+                command = "$FD python.exe$ $HOME/anaconda3/envs --full-path -a -E Lib",
+                type = "anaconda",
+            },
+            anaconda_base = {
+                command = "$FD anaconda3//python.exe $HOME/anaconda3 --full-path -a --color never",
+                type = "anaconda",
+            },
+            miniconda_envs = {
+                command = "$FD python.exe$ $HOME/miniconda3/envs --full-path -a -E Lib",
+                type = "anaconda",
+            },
+            miniconda_base = {
+                command = "$FD miniconda3//python.exe $HOME/miniconda3 --full-path -a --color never",
+                type = "anaconda",
+            },
+            pipx = {
+                command = "$FD Scripts//python.exe$ $HOME/pipx/venvs --full-path -a --color never",
+            },
+            cwd = {
+                command = "$FD Scripts//python.exe$ $CWD --full-path --color never -HI -a -L",
+            },
+            workspace = {
+                command = "$FD Scripts//python.exe$ $WORKSPACE_PATH --full-path --color never -HI -a -L",
+            },
+            file = {
+                command = "$FD Scripts//python.exe$ $FILE_DIR --full-path --color never -HI -a -L",
+            },
+        },
     }
 
     local name = uv.os_uname().sysname
@@ -198,7 +192,7 @@ M.default_settings = {
         telescope_filter_type = "substring", -- When you type something in telescope, filter by "substring" or "character"
         telescope_active_venv_color = "#00FF00", -- The color of the active venv in telescope
     },
-    search = M.get_default_searches()(),
+    search = M.get_default_searches(),
 }
 
 return M
