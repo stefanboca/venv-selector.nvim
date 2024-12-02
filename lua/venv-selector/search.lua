@@ -4,6 +4,8 @@ local path = require("venv-selector.path")
 local utils = require("venv-selector.utils")
 local log = require("venv-selector.logger")
 
+local uv = vim.uv or vim.loop
+
 local function is_workspace_search(str)
     return string.find(str, "$WORKSPACE_PATH") ~= nil
 end
@@ -114,7 +116,6 @@ local function run_search(opts)
         end
     end
 
-    local uv = vim.loop
     local function start_search_job(job_name, search, count)
         local job = path.expand(search.execute_command)
 
@@ -122,7 +123,7 @@ local function run_search(opts)
         M.search_in_progress = true
 
         -- Special for windows to run the command without a shell (translate the command to a lua table before sending to jobstart)
-        if vim.loop.os_uname().sysname == "Windows_NT" then
+        if uv.os_uname().sysname == "Windows_NT" then
             job = utils.split_cmd_for_windows(job)
         end
 

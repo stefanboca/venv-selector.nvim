@@ -1,11 +1,15 @@
 local log = require("venv-selector.logger")
 
+local uv = vim.uv or vim.loop
+-- get_active_clients deprecated in neovim v0.10
+local get_clients = vim.lsp.get_clients or vim.lsp.get_active_clients
+
 local M = {}
 
 M.notifications_memory = {}
 
 function M.send_notification(message)
-    local now = vim.loop.hrtime()
+    local now = uv.hrtime()
 
     -- Check if this is the first notification or if more than 1 second has passed
     local last_notification_time = M.notifications_memory[message]
@@ -90,8 +94,7 @@ function M.pylsp_hook(venv_python)
 end
 
 function M.execute_for_client(name, callback)
-    -- get_active_clients deprecated in neovim v0.10
-    local client = (vim.lsp.get_clients or vim.lsp.get_active_clients)({ name = name })[1]
+    local client = get_clients({ name = name })[1]
 
     if not client then
         --print('No client named: ' .. name .. ' found')

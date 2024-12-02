@@ -1,6 +1,8 @@
 local hooks = require("venv-selector.hooks")
 local log = require("venv-selector.logger")
 
+local uv = vim.uv or vim.loop
+
 local M = {}
 
 M.user_settings = {}
@@ -149,7 +151,7 @@ function M.get_default_searches()
         end,
     }
 
-    local name = vim.loop.os_uname().sysname
+    local name = uv.os_uname().sysname
     return systems[name] or systems["Linux"]
 end
 
@@ -158,7 +160,7 @@ function M.merge_user_settings(user_settings)
     M.user_settings = vim.tbl_deep_extend("force", M.default_settings, user_settings.settings or {})
 
     M.user_settings.detected = {
-        system = vim.loop.os_uname().sysname,
+        system = uv.os_uname().sysname,
     }
 
     log.debug("Complete user settings:", M.user_settings, "")
