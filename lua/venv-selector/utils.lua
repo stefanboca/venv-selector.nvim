@@ -1,9 +1,5 @@
 local M = {}
 
-function M.table_has_content(t)
-    return next(t) ~= nil
-end
-
 -- split a string
 function M.split_string(str)
     local result = {}

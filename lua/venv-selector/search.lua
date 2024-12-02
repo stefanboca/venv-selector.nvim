@@ -183,7 +183,7 @@ local function run_search(opts)
 end
 
 function M.New(opts)
-    if utils.table_has_content(gui.results) == false then
+    if vim.tbl_isempty(gui.results) then
         run_search(opts)
     end
 end

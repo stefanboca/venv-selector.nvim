@@ -23,7 +23,7 @@ function M.list_folders()
         end
     end
 
-    if utils.table_has_content(workspace_folders) then
+    if not vim.tbl_isempty(workspace_folders) then
         log.debug("Workspace folders: ", workspace_folders)
     else
         log.debug("No workspace folders.")
