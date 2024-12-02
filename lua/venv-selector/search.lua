@@ -151,31 +151,32 @@ local function run_search(opts)
     end
 
     local current_dir = path.get_current_file_directory()
+    local workspace_folders = workspace.list_folders()
 
     -- Start search jobs from config
     for job_name, pattern in pairs(search_patterns) do
         if pattern ~= false then -- Can be set to false by user to not search path
-            pattern.execute_command = pattern.command:gsub("$FD", config.search.fd_binary)
+            local execute_command = path.expand(pattern.command:gsub("$FD", config.search.fd_binary))
 
             -- search has $WORKSPACE_PATH inside - dont start it unless the lsp has discovered workspace folders
             if is_workspace_search(pattern.command) then
-                local workspace_folders = workspace.list_folders()
                 for _, workspace_path in ipairs(workspace_folders) do
-                    pattern.execute_command = pattern.execute_command:gsub("$WORKSPACE_PATH", workspace_path)
+                    pattern.execute_command = execute_command:gsub("$WORKSPACE_PATH", workspace_path)
                     job_count = start_search_job(job_name, pattern, job_count)
                 end
                 -- search has $CWD inside
             elseif is_cwd_search(pattern.command) then
-                pattern.execute_command = pattern.execute_command:gsub("$CWD", cwd)
+                pattern.execute_command = execute_command:gsub("$CWD", cwd)
                 job_count = start_search_job(job_name, pattern, job_count)
                 -- search has $FILE_DIR inside
             elseif is_filepath_search(pattern.command) then
                 if current_dir ~= nil then
-                    pattern.execute_command = pattern.execute_command:gsub("$FILE_DIR", current_dir)
+                    pattern.execute_command = execute_command:gsub("$FILE_DIR", current_dir)
                     job_count = start_search_job(job_name, pattern, job_count)
                 end
             else
                 -- search has no keywords inside
+                pattern.execute_command = execute_command
                 job_count = start_search_job(job_name, pattern, job_count)
             end
         end
