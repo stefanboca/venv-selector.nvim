@@ -1,11 +1,14 @@
-local venv = require("venv-selector.venv")
-local path = require("venv-selector.path")
 local config = require("venv-selector.config")
 local log = require("venv-selector.logger")
+local path = require("venv-selector.path")
 
 local M = {}
 
 M.results = {}
+
+function M.clear_results()
+    M.results = {}
+end
 
 function M.insert_result(row)
     log.debug("Result:")
@@ -13,94 +16,6 @@ function M.insert_result(row)
 
     table.insert(M.results, row)
     M.update_results()
-end
-
-function M.get_sorter()
-    local sorters = require("telescope.sorters")
-    local conf = require("telescope.config").values
-
-    local choices = {
-        ["character"] = function()
-            return conf.file_sorter()
-        end,
-        ["substring"] = function()
-            return sorters.get_substr_matcher()
-        end,
-    }
-
-    return choices[config.user_settings.options.telescope_filter_type]
-end
-
-function M.make_entry_maker()
-    local entry_display = require("telescope.pickers.entry_display")
-
-    local displayer = entry_display.create({
-        separator = " ",
-        items = {
-            { width = 2 },
-            { width = 90 },
-            { width = 2 },
-            { width = 20 },
-            { width = 0.95 },
-        },
-    })
-
-    local function draw_icons_for_types(e)
-        if vim.tbl_contains({
-            "cwd",
-            "workspace",
-            "file",
-        }, e.source) then
-            return "󰥨"
-        elseif
-            vim.tbl_contains({
-                "virtualenvs",
-                "hatch",
-                "poetry",
-                "pyenv",
-                "anaconda_envs",
-                "anaconda_base",
-                "miniconda_envs",
-                "miniconda_base",
-                "pipx",
-            })
-        then
-            return ""
-        else
-            return "" -- user created venv icon
-        end
-    end
-
-    local function hl_active_venv(e)
-        local icon_highlight = "VenvSelectActiveVenv"
-        if e.path == path.current_python_path then
-            return icon_highlight
-        end
-        return nil
-    end
-
-    return function(entry)
-        local icon = entry.icon
-        entry.value = entry.name
-        entry.ordinal = entry.path
-        entry.display = function(e)
-            return displayer({
-                {
-                    icon,
-                    hl_active_venv(entry),
-                },
-                { e.name },
-                {
-                    config.user_settings.options.show_telescope_search_type and draw_icons_for_types(entry) or "",
-                },
-                {
-                    config.user_settings.options.show_telescope_search_type and e.source or "",
-                },
-            })
-        end
-
-        return entry
-    end
 end
 
 function M.remove_dups()
@@ -162,7 +77,7 @@ function M.sort_results()
         return count
     end
 
-    log.debug("Sorting telescope results on path similarity.")
+    log.debug("Sorting results on path similarity.")
     table.sort(M.results, function(a, b)
         -- Check for 'selected_python' match
         local a_is_selected = a.path == selected_python
@@ -186,71 +101,25 @@ function M.sort_results()
 end
 
 function M.update_results()
-    local finders = require("telescope.finders")
-    local actions_state = require("telescope.actions.state")
-
-    local finder = finders.new_table({
-        results = M.results,
-        entry_maker = M.make_entry_maker(),
-    })
-
-    local bufnr = vim.api.nvim_get_current_buf()
-    local picker = actions_state.get_current_picker(bufnr)
-    if picker ~= nil then
-        picker:refresh(finder, { reset_prompt = false })
-    end
+    M.picker.update_results(M.results)
 end
 
 function M.open(in_progress)
-    local finders = require("telescope.finders")
-    local pickers = require("telescope.pickers")
-    local actions_state = require("telescope.actions.state")
-    local actions = require("telescope.actions")
-
-    local title = "Virtual environments (ctrl-r to refresh)"
-
-    if in_progress == false then
+    if not in_progress then
         M.sort_results()
     end
 
-    local finder = finders.new_table({
-        results = M.results,
-        entry_maker = M.make_entry_maker(),
-    })
+    M.picker.open(M.results)
+end
 
-    local opts = {
-        prompt_title = title,
-        finder = finder,
-        layout_strategy = "vertical",
-        layout_config = {
-            height = 0.4,
-            width = 120,
-            prompt_position = "top",
-        },
-        cwd = require("telescope.utils").buffer_dir(),
-
-        sorting_strategy = "ascending",
-        sorter = M.get_sorter()(),
-        attach_mappings = function(bufnr, map)
-            map({ "i", "n" }, "<cr>", function()
-                local selected_entry = actions_state.get_selected_entry()
-                if selected_entry ~= nil then
-                    venv.set_source(selected_entry.source)
-                    venv.activate(selected_entry.path, selected_entry.type, true)
-                end
-                actions.close(bufnr)
-            end)
-
-            map("i", "<C-r>", function()
-                M.results = {}
-                local search = require("venv-selector.search")
-                search.New(nil)
-            end)
-
-            return true
-        end,
-    }
-    pickers.new({}, opts):find()
+function M.setup()
+    if config.picker == "telescope" then
+        M.picker = require("venv-selector.pickers.telescope")
+    elseif config.picker == "fzf-lua" then
+        M.picker = require("venv-selector.pickers.fzf_lua")
+    else
+        -- TODO: error
+    end
 end
 
 return M

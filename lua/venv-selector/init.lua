@@ -71,6 +71,8 @@ function M.setup(plugin_settings)
         log.enabled = true
     end
     user_commands.register()
+
+    require("venv-selector.gui").setup()
 end
 
 return M
