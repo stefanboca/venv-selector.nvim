@@ -20,7 +20,7 @@ function M.add(newDir)
                 M.remove(previous_dir)
             end
             local path = vim.fn.getenv("PATH")
-            local path_separator = package.config:sub(1, 1) == "\\" and ";" or ":"
+            local path_separator = package.config:sub(3, 3)
             local clean_dir = M.remove_trailing_slash(newDir)
             local updated_path = clean_dir .. path_separator .. path
             previous_dir = clean_dir
@@ -62,7 +62,7 @@ function M.remove(removalDir)
     local clean_dir = M.remove_trailing_slash(removalDir)
     local path = vim.fn.getenv("PATH")
     log.debug("Path before venv removal: ", path)
-    local pathSeparator = package.config:sub(1, 1) == "\\" and ";" or ":"
+    local pathSeparator = package.config:sub(3, 3)
     local paths = {}
     for p in string.gmatch(path, "[^" .. pathSeparator .. "]+") do
         if p ~= clean_dir then
